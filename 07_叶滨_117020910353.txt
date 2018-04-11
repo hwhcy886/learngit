@@ -1,0 +1,156 @@
+学习git小结：
+git有许多优点：
+1、适合分布式开发，强调个体。
+2、公共服务器压力和数据量都不会太大。
+3、速度快、灵活。
+4、任意两个开发者之间可以很容易的解决冲突。
+
+
+使用步骤：
+1、Git安装完成后的设置
+$ git config --global user.name "Your Name"——设置你的名字
+$ git config --global user.email "email@example.com" ——设置你的邮箱
+
+2、创建版本库
+①选择一个合适的地方，创建一个空的目录【确保目录名（包括父目录）不包含中文】
+$ mkdir xxx(目录名) ——创建目录xxx【可使用c/文件名/目录名的格式创建到你想要的地方】
+$ cd xxx(目录名)——             切换工作目录至xxx
+$ pwd ——以绝对路径方式显示当前工作目录
+②使这个目录变成Git可以管理的仓库
+$ git init ——创造一个git目录，初始化仓库
+如果你没有看到.git目录，那是因为这个目录默认是隐藏的，用ls -ah命令就可以看见。
+
+3、添加文件到Git仓库【只能跟踪文本文件的改动】
+①用命令git add告诉Git，把文件添加到仓库    
+$ git add xxx(文件名+后缀) ——添加文件，可一次添加多个文件
+②用命令git commit告诉Git，把文件提交到仓库
+$ git commit -m "xxx"[提交说明] ——将文件提交，可一次提交多个文件  
+
+4、文件状态查看&修改后的文件提交
+$ git status——                       查看文件当前状态
+$ git diff xxx(文件名&后缀)——                            显示改动的区别
+提交修改---①git add  ②git commit
+
+5、查看历史修改状况&版本回退
+$ git log——                                                             显示提交的更改记录
+$ git log --pretty=oneline ——显示简化后提交的更改记录
+HEAD表示当前版本，上一个版本就是HEAD^，上上一个版本就是HEAD^^，当然往上100个版本写100个^比较容易数不过来，所以写成HEAD~100。
+$ git reset --hard HEAD^——             回退到上一版本
+$ git reset --hard 版本号 ——回退到指定版本
+$ git reflog ——查看每次的操作记录
+$ cat xxx(文件名&后缀) ——查看文件内容
+
+6、工作区和暂存区
+工作区（Working Directory）---编辑文档的地方，电脑里能看见的目录
+版本库（Repository）---工作区中的一个隐藏目录.git，其中最重要的就是称为stage（或者叫index）的暂存区，还有Git为我们自动创建的第一个分支master，以及指向master的一个指针叫HEAD。
+
+git add作用是将文件添加进去，实际上就是把文件修改添加到暂存区；
+git commit作用是提交更改，实际上就是把暂存区的所有内容提交到当前分支。
+注：必须先git add载git commit，否则文件的修改情况不会添加到版本库里。
+$ git diff HEAD -- xxx(文件名&后缀)——查看工作区和版本库里面最新版本的区别
+
+7、撤销修改
+$ git checkout -- xxx(文件名&后缀) ——丢弃工作区的修改
+$ git reset HEAD xxx(文件名&后缀) ——将暂存区的修改撤销
+总结：
+① 当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改时，用命令git checkout -- file
+② 当你不但改乱了工作区某个文件的内容，还添加到了暂存区时，想丢弃修改，第一步用命令git reset HEAD file，然后执行git checkout -- file
+③ 已经提交了不合适的修改到版本库时，想要撤销本次提交，用命令git reset --hard HEAD^或者git reset --hard 版本号来进行版本回退
+
+8、删除文件
+$ rm xxx(文件名&后缀)——                                删除工作区里的文件
+$ git checkout -- xxx(文件名&后缀)——            恢复工作区的修改或删除
+                                                                    （实质上是用版本库中的替换工作区的文件）
+
+从版本库中移除文件分为两步：
+$ git rm xxx(文件名&后缀) ——移除版本库中的文件          
+$  git commit -m "xxx"[提交说明] ——提交该请求，完成删除
+PS：上述移除文件可以通过 git reset --hard 版本号 实现撤回
+
+9、远程仓库
+准备工作：
+①创建SSH Key。
+在用户主目录下，看看有没有.ssh目录，如果有，再看看这个目录下有没有id_rsa和id_rsa.pub这两个文件，如果已经有了，可直接跳到下一步。如果没有，打开Shell（Windows下打开Git Bash），创建SSH Key
+$ ssh-keygen -t rsa -C "youremail@example.com"      一直按回车即可
+②登陆GitHub，打开“Account settings”—“SSH Keys”—“Add SSH Key”粘贴id_rsa.pub的内容，完成远程仓库工作前的设置。
+
+添加远程库：
+①首先在GitHub上创建一个新的仓库（注意输完名称后直接点击创建按钮！）
+②将新建的仓库与本地的仓库相关联
+$ git remote add origin git@github.com:(your name)/(rep name).git
+③将本地库的内容推送至远程库上
+$ git push -u origin master 
+此时，只要对本地修改文件进行了git commit，就可以使用git push origin master进行同步。
+
+从远程库克隆：
+①首先在GitHub上创建一个新的仓库（注意勾选Initialize this repository with a README按钮！）
+②克隆出一个本地库
+$ git clone git@github.com:(your name)/(rep name).git
+$ ls ——查看库中有哪些文件
+
+10、分支管理
+创建&合并分支：
+$ git checkout -b  分支名【$ git branch 分支名（创建分支）+$ git checkout 分支名 】——创造并切换至新分支
+$ git branch ——查看当前分支
+$ git checkout master/分支名——              切换分支
+$ git merge 分支名 ——合并指定分支到当前分支
+$ git branch -d 分支名 ——删除分支          
+
+解决冲突：
+当master与分支都进行过修改时，合并分支会发生冲突，解决冲突之后，可以再次提交进行合并。
+$ git log --graph --pretty=oneline --abbrev-commit —— 查看分支合并图
+
+
+分支管理策略：
+合并分支时，加上--no-ff参数就可以用普通模式合并，合并后的历史有分支，能看出来曾经做过合并，而fast forward合并就看不出来曾经做过合并。
+$ git merge --no-ff -m "merge with no-ff" 分支名
+
+
+Bug分支：
+我们可以通过一个新的临时分支来修复产生的bug，修复后，合并分支，然后将临时分支删除即可。
+①若你有正在进行的工作又不想提交可以通过stash功能使现有的工作暂时隐藏起来
+$ git stash                    储藏你当前的工作内容
+②若没有的话，直接在master上新建一个分支进行bug的修复，修改完之后直接合并即可
+③恢复你正在进行的工作
+$ git stash list ——查看被储存工作的列表
+$  git stash pop ——恢复工作内容并删除stash中的内容
+$  git stash apply stash@{序号}——恢复工作内容但不删除stash中的内容
+
+Feature分支：
+开发一个新的feature，最好新建一个分支，以防止中途feature取消。
+$ git branch -D 分支名 —— 强行删除未合并的分支
+
+
+多人协作：
+$ git remote -v ——获取远程库抓取或获取origin的地址
+$  git push origin master/分支名 ——推送分支
+①master分支是主分支，因此要时刻与远程同步；
+②dev分支是开发分支，团队所有成员都需要在上面工作，所以也需要与远程同步；
+③bug分支只用于在本地修复bug，就没必要推到远程了，除非老板要看看你每周到底修复了几个bug；
+④feature分支是否推到远程，取决于你是否和你的小伙伴合作在上面开发。
+
+11、标签管理
+创造标签：
+$ git branch ——查看分支状态
+$ git checkout master ——切换至需要打标签的分支上
+$ git tag <name> ——给当前版本打一个标签
+$ git tag <name> 版本号 ——给某版本打一个标签
+$ git tag ——查看所有标签
+$ git show <tagname> ——查看标签信息
+$ git tag -a <tagname> -m "xxx[说明文字]" 版本号 ——给某版本打一个带说明的标签
+
+操作标签：
+$ git tag -d <tagname> ——删除标签
+$ git push origin <tagname>——推送标签至远程库  
+$ git push origin --tags ——推送所有标签
+
+删除远程库标签
+①$ git tag -d <tagname>
+②$ git push origin :refs/tags/<tagname>    
+
+12、使用github
+参加开源项目
+①Fork一个项目
+②$ git clone git@github.com:(your name)/(rep name).git
+③可以修改提交自己的见解
+④发起一个pull request来参与项目
